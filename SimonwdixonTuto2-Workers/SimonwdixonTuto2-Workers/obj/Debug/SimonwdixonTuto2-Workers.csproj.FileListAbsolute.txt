@@ -1,0 +1,96 @@
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.dll
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.ServiceModel.dll
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.xml
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+c:\users\oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Oscar\documents\visual studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Oscar\Documents\Visual Studio 2015\Projects\tristone nueva app\codigo para entregar\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.xml
+E:\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+E:\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+E:\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.dll
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.dll
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.xml
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.xml
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.xml
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+C:\Users\Ulises\Desktop\Tristone\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.dll
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.dll
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.xml
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.xml
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Ulises\Desktop\SWTristone\3.- Monitor Software Tristone\Source Code\Monitor\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\RabbitMQ.Client.xml
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe.config
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.exe
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\SimonwdixonTuto2-Workers.pdb
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.dll
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.dll
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.dll
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Google.Protobuf.xml
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\MySql.Data.xml
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\bin\Debug\Newtonsoft.Json.xml
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Form1.resources
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2_Workers.Properties.Resources.resources
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csproj.GenerateResource.Cache
+C:\Users\PC-UlisesServ\Desktop\SimonwdixonTuto2-Workers\SimonwdixonTuto2-Workers\obj\Debug\SimonwdixonTuto2-Workers.csprojResolveAssemblyReference.cache

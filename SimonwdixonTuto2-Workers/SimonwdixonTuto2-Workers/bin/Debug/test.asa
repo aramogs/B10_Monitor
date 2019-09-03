@@ -1,0 +1,2113 @@
+REPORT z_tafr_pp_bl  LINE-SIZE 110 LINE-COUNT 100 MESSAGE-ID vn.
+
+* *********************************************************************
+*  DESCRIPTION    : Programme pour formulaire BL
+*
+*  Correspondance     : de type LD00
+*  Formulaire         : ZD_DELNOTE_SUPPL
+* *********************************************************************
+* Date création : 20/03/98              Auteur :  FA (UNILOG)
+* Référence dossier de spécifications techniques :   Z
+* *********************************************************************
+* N°  Modif.  Auteur      DATE
+* Objet de la modification
+*----------------------------------------------------------------------
+*Modifications faites suite à l'anomalie G002 :
+*Pb des adresses fournisseurs et expéditeurs non imprimées
+*Effectuées le 22/01/99 par SD
+*Lignes modifiées référencées par 'modif G002'
+***********************************************************************
+*Modification faite par SD le 15/02/99 ref (sd150299)
+*Langue non initialisée pour la lecture du mode de transport
+*langue initialisée avec la langue du message à générer (structure
+* nast)
+***********************************************************************
+* Modifications JD - SOPRA du 02/03/99
+*  corrections des bugs de la version précédentes
+*----------------------------------------------------------------------
+* Modifications JD - SOPRA du 30/04/99
+* Heure de livraison
+*----------------------------------------------------------------------
+* Modifications JD - SOPRA du 14/05/99
+* correction du bug 'Nombre d'exemplaires'
+*----------------------------------------------------------------------
+* Modifications JD - SOPRA du 21/05/99
+* Recherche du numéro de commande dans le texte de l'entete
+*----------------------------------------------------------------------
+* Modifications JD - SOPRA du 28/05/99
+* Suppression de la ligne vide de fin de formulaire
+*----------------------------------------------------------------------
+* Modification ORBIS 31/07/2005
+* UC par interval
+*----------------------------------------------------------------------
+* Modification ORBIS 21/11/2005
+* quantité cumuler par référence
+*----------------------------------------------------------------------
+* Modification ORBIS 15/03/2006
+* 1) code international pour le pays
+* 2) Nom expéditeur replacer par le nom de client
+*    pour livraison directe (pour valeo à OEM)
+* 3) departure date and RAN Number
+*----------------------------------------------------------------------
+TABLES: vbco3,           "Keyfelder Vertriebsbeleg: Dokumentendruck
+
+        vbpa,                          "Partnertabelle
+        *vbpa,                         " Partnertabelle ajout JD
+*        ZINV,                          " table de communication (JD)
+        t006,                          " table pour unité (JD)
+        tvlk,                          " table des schémas (JD)
+        tvlp,                          " table des schémas de poste (JD)
+        ttxer,                         " table des commentaires (JD)
+        knva,                          " table livraisons (JD-30/04/99)
+        likp,                          " livraison (JD-04/06/99)
+        tvbur,                         "Verkaufsbüroadressennummer
+        vbadr,                         "Vertriebsbelegadresse
+        vbdkl,           "Druck Lieferschein: Versandkopfdaten
+        vbdpl,           "Druck Lieferschein: Versandpositionsdaten
+
+        vbpla,           "Druck Packliste   : allgemeine Daten
+        vbplk,           "Druck Packliste   : Versandelementkopfdaten
+        vbplp,           "Druck Packliste   : Versandelementinhaltsdaten
+        vbpls.           "Druck Packliste   : Summendaten Verpackung
+
+* %fa Tables supplémentaires  -----------------------------------------
+TABLES: vekp,                          "En-tete de l'élément d'emballage
+        knmt,                          "Fiche info-client/article
+        tvst,                          "Points d'expédition
+        sadr,            "Gestion des adresses : données d'entreprise
+       *sadr,            "Gestion des adresses : données d'entreprise
+        knvv,                                               "
+        knvk,                          " Fiche client correspondant
+        tvko,            "Elément d'organisation: Organisations commerci
+        t001k,
+        t001,
+        t001w,
+        tvtyt,           "Types de matériel d'emballage: Désignations
+*        ZETQ03,
+*        ZETQ02,
+        ltap,
+        vblkp,
+        lips, ekpo,
+** modification ORBIS 15/03/2006 code international du pays
+*        t005t,           "modif SD le 25/01/99 recup libelle pays
+** fin modification ORBIS 15/03/2006 code international du pays
+        kna1,            "modif SD le 27/01/99 recup contact 'ZC'
+        vbkd,  "Données "commande" du document commercial
+        twlad.  "Adresse des magasins "Add RLT/BVD
+
+**** Follwing data added - SD-0004 Gokul 12AUG2003
+TABLES: t173t,
+        vttk,
+        vttp,
+        vtts,
+        lfa1,
+        *ttxer,
+        *adrc.
+**** End of additions - Sd-0004 Gokul 12AUG2003
+
+* Modified by JSP 24/05/2005
+* Management of the RAN NUBMER of NISSAN
+TABLES: jitit,
+        jithd.
+DATA: w_kanban_number TYPE lips-kannr.
+DATA: w_jitte-reftx TYPE jitte-reftx.
+* End of modification 24/05/2005
+
+*** Following one line addded - GOKUL 20NOV2003
+DATA: print_line.
+
+DATA: f_lfimg(13) TYPE c.
+
+* RLT/BVD - Zones spécifiques SOFEDIT
+DATA: w_avec_embal.  "Afficher les amballages ?
+* RLT/BVD - Fin de modif
+
+TABLES : adrc,tsad3t, adr2.                  "modif G002/SD
+
+DATA: BEGIN OF t_zetq03 OCCURS 0,
+        zznum_um LIKE vekp-exidv.
+DATA: END OF t_zetq03.
+
+* Debut ajout contre bug Nb de colis <<<<<<<<<<<   %fa19980904
+DATA: BEGIN OF tz_zetq02 OCCURS 1000,
+            matnr    LIKE vbdpl-matnr,
+            charg    LIKE vbdpl-charg,
+            vhilm    LIKE vbplk-vhilm,
+* Ajout T.D
+            posnr    LIKE vbdpl-posnr,
+            uevel    LIKE  vbplk-uevel,
+* Fin Ajout T.D
+            obzae(6) TYPE n." LIKE ZETQ03-OBZAE.
+DATA: END OF tz_zetq02.
+
+DATA: w_vhilm LIKE vbplk-vhilm,
+* Ajout T.D
+      w_uevel2 LIKE vbplk-uevel,
+      w_posnr LIKE vbdpl-posnr,
+* fin ajout T.D
+      w_matnr LIKE mara-matnr,
+      w_matnr2 LIKE mara-matnr,
+      w_lfimg LIKE vbdpl-lfimg,        "%fa19980824
+      w_ligne1(1) TYPE c.              "%fa19980824
+
+DATA: BEGIN OF tzvbdpl OCCURS 1000,
+            matnr  LIKE vbdpl-matnr,
+            lfimg LIKE vbdpl-lfimg,
+            vrkme LIKE vbdpl-vrkme.
+DATA: END OF tzvbdpl.
+* Fin ajout <<<<<<<<<<<<<<<<<<<<<<<<               %fa19980904
+* RLT/BVD - Reprise de la structure ZINV en local pour pourvoir utiliser
+* les zones correspondantes
+DATA: BEGIN OF zinv,
+         teletrans,           "BL télétransmis
+         unite_fact LIKE t006-isocode, "Unité du poste au format ISO
+      END OF zinv.
+*>>> Martin Wagner, Dec. 2006: Transport Identifer
+DATA: ZSD_TRID TYPE JIT_PRODN,
+      ZSD_TRID_FLAG LIKE sy-subrc,
+      ZSD_TRAR_SCOPE(4) TYPE c.
+*<<< End Wagner
+* ---------------------------------------------------------------------
+
+
+INCLUDE rvadtabl.
+INCLUDE sdveltyp.
+
+DATA: BEGIN OF lvbpla OCCURS 0.
+        INCLUDE STRUCTURE vbpla.       "Allgemeine Packlistendaten
+DATA: END OF lvbpla.
+
+DATA: BEGIN OF lvbplk OCCURS 0.
+        INCLUDE STRUCTURE vbplk.       "Packlistenkopf
+DATA: END OF lvbplk.
+
+DATA: BEGIN OF lvbplp OCCURS 0.
+        INCLUDE STRUCTURE vbplp.       "Packlistenposition
+DATA: END OF lvbplp.
+
+DATA: BEGIN OF lvbpls OCCURS 0.
+        INCLUDE STRUCTURE vbpls.       "Packlistenstruktur
+DATA: END OF lvbpls.
+
+DATA: BEGIN OF tvbdpl OCCURS 0.
+        INCLUDE STRUCTURE vbdpl.       "Lieferscheinposition
+DATA: END OF tvbdpl.
+
+DATA: retcode   LIKE sy-subrc.         "Returncode
+DATA: xscreen(1) TYPE c.               "Output on printer or screen
+
+* ---------------------------------------------------------------------
+* %fa    Elément d'emballage supérieur :
+DATA: w_uevel LIKE vbplk-uevel,
+      w_no_vbpls(1) TYPE c,  "si 'X' : pas de rementée de "Type decolis"
+                                       " et "N° UM"
+      w_new_item_packing(1) TYPE c,
+      w_charg LIKE vbplp-charg,        "Numéro de lot
+      w_obzae(6) TYPE n," LIKE ZETQ03-OBZAE,"Compteur "Nbre total d'U.M"
+      w_exemplaire LIKE nast-anzal,    "Nombre d'exemplaire
+      w_loop(6) TYPE n." LIKE ZETQ03-OBZAE. "Compteur sur boucle des UC
+
+* ---------------------------------------------------------------------
+
+DATA : w_lot," LIKE ZETQ02-LICHA,
+       w_indice," LIKE ZETQ02-PCKAR,
+       w_pays_origine LIKE t005t-landx."pays origine
+*>>>Martin Wagner: Country: Code + Name
+DATA : w_pays_orig_name(20) type c.
+*<<<Ende Wagner
+
+*** Ajout JD - SOPRA
+DATA: addselec LIKE addr1_sel,
+      w-numcde LIKE vbdpl-bstnk.
+
+DATA: BEGIN OF zadresse.
+        INCLUDE STRUCTURE addr1_val.
+DATA: END OF zadresse.
+
+DATA: BEGIN OF wline OCCURS 10.
+        INCLUDE STRUCTURE tline.
+DATA: END OF wline.
+
+* -> Modification ORBIS 31/07/2005
+*----------------------------------------------------------------------
+DATA: BEGIN OF hvbplp_sort_iv OCCURS 0,
+        stufe     TYPE i,
+        um LIKE vbplp-unvel.
+        INCLUDE STRUCTURE vbplp.
+DATA:   exidv   LIKE vekp-exidv,
+        flg_iv TYPE xflag,
+        exidv_iv_end LIKE vekp-exidv,
+        flg_iv_neu  TYPE xflag,
+      END OF hvbplp_sort_iv.
+* <- Modification ORBIS 31/07/2005
+* -> Modification ORBIS 21/11/2005
+*----------------------------------------------------------------------
+DATA: BEGIN OF mat_cums OCCURS 0,
+        matnr TYPE matnr,
+        posnr LIKE tvbdpl-posnr,
+        vgpos LIKE tvbdpl-vgpos,
+        vgbel LIKE tvbdpl-vgbel,
+        lfimg LIKE vbdpl-lfimg,
+        anzcolli TYPE vbpls-anzpk,
+        vhilm LIKE vbpls-vhilm,
+*        vemng LIKE vbplp-vemng,
+        vemng(4) TYPE n,
+      END OF mat_cums.
+DATA: w_kanban_number_save TYPE lips-kannr.
+DATA: w_kanban_number_last TYPE lips-kannr.
+* <- Modification ORBIS 21/11/2005
+
+*----------------------------------------------------------------------
+* Modification ORBIS 15/03/2006 departure date
+DATA:  g_departure_date_flag TYPE xflag,
+       g_departure_date_date TYPE lfdat,
+       g_departure_date_time TYPE lfuhr.
+* fin modification ORBIS 15/03/2006
+DATA: g_arrival_date_flag TYPE xflag.
+*----------------------------------------------------------------------
+* Modification M. Wagner 24/01/2007 Arrival date
+DATA:  gv_arrival_date_date TYPE lfdat,
+       gv_arrival_date_time TYPE lfuhr.
+*{   INSERT         D01K921919                                        1
+* Martin Wagner, Oct 2007: Request Airax Production Text on ZFI2
+DATA: ZZPROD_TEXT(70) TYPE C.
+*}   INSERT
+DATA: gv_location(35) TYPE c.
+*----------------------------------------------------------------------
+
+*---------------------------------------------------------------------*
+*       FORM ENTRY                                                    *
+*---------------------------------------------------------------------*
+*       Einstieg für die Nachrichtensteuerung                         *
+*---------------------------------------------------------------------*
+*  -->  RETURN_CODE                                                   *
+*  -->  US_SCREEN                                                     *
+*---------------------------------------------------------------------*
+FORM entry USING return_code us_screen.
+
+* RLT/BVD - Gestion de l'édition des emballages
+  w_avec_embal = 'N'.
+* RLT/BVD - Fin de modif
+
+  CLEAR retcode.
+  xscreen = us_screen.
+
+* Formular öffnen, aufbereiten und schließen
+  PERFORM formular_delnote USING us_screen.
+
+  CASE retcode.
+    WHEN 0.
+      return_code = 0.
+    WHEN 3.
+      return_code = 3.
+    WHEN OTHERS.
+      return_code = 1.
+  ENDCASE.
+
+ENDFORM.
+
+* RLT/BVD - Gestion de l'édition des emballages
+*---------------------------------------------------------------------*
+*       FORM ENTRY_EMBALLAGES
+*---------------------------------------------------------------------*
+*       Einstieg für die Nachrichtensteuerung                         *
+*---------------------------------------------------------------------*
+*  -->  RETURN_CODE                                                   *
+*  -->  US_SCREEN                                                     *
+*---------------------------------------------------------------------*
+FORM entry_emballages USING return_code us_screen.
+
+* RLT/BVD - Gestion de l'édition sans Colis
+  w_avec_embal = 'O'.
+* RLT/BVD - Fin de modif
+
+  CLEAR retcode.
+  xscreen = us_screen.
+
+* Formular öffnen, aufbereiten und schließen
+  PERFORM formular_delnote USING us_screen.
+
+  CASE retcode.
+    WHEN 0.
+      return_code = 0.
+    WHEN 3.
+      return_code = 3.
+    WHEN OTHERS.
+      return_code = 1.
+  ENDCASE.
+
+ENDFORM.
+* RLT/BVD - Fin de modif
+
+*---------------------------------------------------------------------*
+*       FORM FORMULAR_DELNOTE                                         *
+*---------------------------------------------------------------------*
+*       Bearbeitung für Lieferschein                                 *
+*---------------------------------------------------------------------*
+FORM formular_delnote USING proc_screen.
+
+* Werte aufbauen
+  PERFORM get_data.
+  CHECK retcode = 0.
+
+* SAP-SCRIPT STEUERUNG festlegen
+  PERFORM form_open USING proc_screen vbdkl-land1.
+  CHECK retcode = 0.
+
+* modif 02/03/99 - recherche du libellé de l'organisation commerciale
+  SELECT SINGLE * FROM tvko  WHERE vkorg = vbdkl-vkorg.
+  addselec-addrnumber = tvko-adrnr.
+
+  CALL FUNCTION 'ADDR_GET'
+       EXPORTING
+            address_selection = addselec
+       IMPORTING
+            address_value     = zadresse.
+** modification ORBIS 15/03/2006 code international du pays
+  zadresse-name4 = zadresse-country.
+****** modif JD 02/03/99 recherche du pays de l'expediteur
+**  PERFORM z_libelle_pays USING zadresse-country.
+**  MOVE t005t-landx TO zadresse-name4.
+**  TRANSLATE zadresse-name4 TO UPPER CASE.
+****** fin de modif JD - recherche du pays
+** fin modification ORBIS 15/03/2006 code international du pays
+
+*** fin modif organisation commerciale
+
+*** modif 02/03/99 - JD - recherche si teletransmis
+  SELECT * FROM *nast
+         WHERE kappl = 'V2'
+         AND objky = vbdkl-vbeln
+*        AND KSCHL = 'LAVA'.
+         AND nacha = '6'.
+    EXIT.
+  ENDSELECT.
+  IF sy-subrc = 0.
+    zinv-teletrans = 'X'.
+  ELSE.
+    zinv-teletrans = ' '.
+  ENDIF.
+*** fin modif teletransmis
+
+* Wiederholungsdruck prüfen und ausgeben
+**  perform check_repeat.  " Modif 15/05/99
+
+* %fa -----------------------------------------------------------------
+* Initialisation table interne
+  CLEAR t_zetq03.
+  REFRESH t_zetq03.
+  CLEAR w_obzae.
+* %fa -----------------------------------------------------------------
+* Agence commercial CF. TVBUR ci dessus dans get_data
+
+* %fa --------   ADRESSE EXPEDITEUR  -----------------------------------
+* Point d'expédition : Recherche dans TVST du numéro d'adresse
+  CLEAR tvst.
+  SELECT SINGLE * FROM  tvst
+         WHERE  vstel = vbpla-vstel.   "modif G002/SD
+*        where  vstel = lvbplk-vstel.  "modif G002/SD
+
+********** debut modif G002/SD**************************************
+  CLEAR adrc.
+  IF vbpla-vstel = '3399'.                      "TKS
+    SELECT SINGLE * FROM t001                   "TKS
+                    WHERE bukrs = tvbdpl-werks. "TKS
+    SELECT SINGLE * FROM adrc                   "TKS
+    WHERE addrnumber = t001-adrnr.              "TKS
+    CLEAR adr2.                                 "TKS
+    SELECT SINGLE * FROM adr2                   "TKS
+       WHERE addrnumber = t001-adrnr.           "TKS
+  ELSE.                                         "TKS
+    SELECT * FROM adrc
+    WHERE addrnumber = tvst-adrnr.
+      EXIT.
+    ENDSELECT.
+  ENDIF.                                        "TKS
+  IF NOT adrc IS INITIAL.
+    CLEAR adr2.
+    SELECT SINGLE * FROM adr2
+       WHERE addrnumber = tvst-adrnr.
+  ENDIF.
+  CLEAR tsad3t.
+  SELECT SINGLE * FROM tsad3t
+     WHERE langu = adrc-langu
+     AND title = adrc-title.
+  sadr-anred = tsad3t-title_medi.
+  sadr-stras = adrc-street.
+  sadr-name1 = adrc-name1.
+  sadr-name4 = adrc-name4.
+  sadr-telf1 = adr2-tel_number.
+  sadr-pfach = adrc-po_box.
+  sadr-pstl2 = adrc-post_code2.
+  sadr-ort01 = adrc-city1.
+  sadr-pstlz = adrc-post_code1.
+  sadr-land1 = adrc-country.
+  sadr-regio = adrc-region.
+  CLEAR adrc.
+********** fin  modif G002/SD**************************************
+** modification ORBIS 15/03/2006 code international du pays
+  sadr-name3 = sadr-land1.
+****** modif JD 02/03/99 recherche du pays de l'expediteur
+**  PERFORM z_libelle_pays USING sadr-land1.
+**  MOVE t005t-landx TO sadr-name3.
+**  TRANSLATE sadr-name3 TO UPPER CASE.
+****** fin de modif JD - recherche du pays
+** fin modification ORBIS 15/03/2006 code international du pays
+
+*** Following coding added - SD-0004 Gokul 12AUG2003.
+
+  SELECT SINGLE * FROM vttp WHERE
+                     vbeln EQ vbdkl-vbeln.
+
+  SELECT SINGLE * FROM vttk WHERE
+                     tknum = vttp-tknum.
+*>>> Martin Wagner, Dec. 2006: Transport Identifier
+  CLEAR: ZSD_TRID, ZSD_TRID_FLAG.
+  CALL FUNCTION 'Z_SD_TRID_CHECK_RELEVANCE'
+    EXPORTING
+      SHIP_POINT       = vbdkl-vstel
+      SHIP_TO          = vbdkl-kunwe
+      DELIVERY         = vbdkl-vbeln
+    IMPORTING
+      SUBRC            = zsd_trid_flag
+      TRID             = zsd_trid
+      TR_AD_SCOPE      = ZSD_TRAR_SCOPE.
+*<<< End Wagner
+  SELECT SINGLE * FROM vtts WHERE
+                                 tknum EQ vttp-tknum
+                             AND kunna EQ vbdkl-kunwe
+                             AND kunablz EQ vbdkl-ablad.
+
+  SELECT SINGLE * FROM lfa1 WHERE
+                                 lifnr EQ vttk-tdlnr.
+
+
+
+*** End of Additions -SD-0004 Gokul 12AUG2003.
+
+*** Addition for Window ZTRASIT Gokul 04SEP2003.
+
+  SELECT * FROM vbpa WHERE
+                           vbeln = vbdkl-vbeln
+                       AND ( parvw = 'SB' OR
+                             parvw = 'ZT' ).
+    EXIT.
+  ENDSELECT.
+
+  IF sy-subrc = 0.
+
+    SELECT * FROM adrc WHERE addrnumber = vbpa-adrnr.
+      EXIT.
+    ENDSELECT.
+
+** modification ORBIS 15/03/2006 code international du pays
+    adrc-name4 = adrc-country.
+****** modif Gokul 09SEP03
+**    PERFORM z_libelle_pays USING adrc-country.
+**    MOVE t005t-landx TO adrc-name4.
+**    TRANSLATE adrc-name4 TO UPPER CASE.
+****** fin de modif Gokul 09SEP03
+** fin modification ORBIS 15/03/2006 code international du pays
+  ENDIF.
+
+*** End of addition.
+
+* %fa --------   Désignation du moyen de transport ---------------------
+* Following lines commented and new code added - SD-0004 Gokul 12AUG2003
+*  CLEAR TVTYT.
+*  SELECT SINGLE * FROM  TVTYT
+*         WHERE  SPRAS = NAST-SPRAS
+*         AND    TRATY = VBDKL-TRATY.
+  CLEAR t173t.
+  SELECT SINGLE * FROM t173t WHERE spras = nast-spras
+                               AND vsart = vttk-vsart.
+*End of Modification - SD-004 Gokul 12AUG2003
+
+* %fa -----------------------------------------------------------------
+* CONTACT
+* clear vbpa.
+*  select * from  vbpa
+*        where  vbeln = vbdkl-vbeln_vauf
+*        and    parvw = 'AP'.
+*   exit.
+*  endselect.
+* Accès au numéro d'adresse du partenaire
+*  clear knvk.
+*  select single * from  knvk
+*         where  parnr = vbpa-parnr.
+*modif SD le 27/01/99 contact memorise dans un client
+*type partenaire dans fiche client ZC
+
+*** modif JD 02/03/99 - recherche du code client facturé
+*** Following codes commented and replaced. - SD-0004 Gokul 12AUG2003
+*  CLEAR *VBPA.
+*  SELECT * FROM  *VBPA
+*        WHERE  VBELN = VBDKL-VBELN_VAUF
+*        AND POSNR = '000000'
+*        AND    PARVW = 'RE'.
+*    EXIT.
+*  ENDSELECT.
+*  SELECT * FROM KNVV
+*   WHERE KUNNR = *VBPA-KUNNR
+*   AND VKORG = VBDKL-VKORG.
+*    EXIT.
+*  ENDSELECT.
+  SELECT * FROM knvv WHERE kunnr = vbdkl-kunag
+                       AND vkorg = vbdkl-vkorg.
+    EXIT.
+  ENDSELECT.
+
+*** fin modif JD 02/03/99
+*** End of Modification - SD-0004 Gokul 12AUG2003
+
+  CLEAR vbpa.
+  SELECT * FROM  vbpa
+        WHERE  vbeln = vbdkl-vbeln_vauf
+        AND    parvw = 'ZC'.
+    EXIT.
+  ENDSELECT.
+* Accès au numéro d'adresse du partenaire
+  CLEAR kna1.
+  SELECT SINGLE * FROM  kna1
+         WHERE  kunnr = vbpa-kunnr.
+  MOVE kna1-name1 TO knvk-name1.
+  MOVE kna1-telf1 TO knvk-telf1.
+
+* RLT/BVD - Recherche des données commande du document commercial
+* -> En particulier pour le groupe de condiition 2 qui indique si le
+*    détail colisage doit être imprimmé
+  CLEAR vbkd.
+  SELECT SINGLE * FROM  vbkd
+        WHERE  vbeln = vbdkl-vbeln_vauf
+        AND    posnr = '000000'.
+
+* ---------------------------------------------------------------------
+** modification ORBIS 15/03/2006 Nom expéditeur replacer
+*  par le nom de client pour livraison directe (pour valeo à OEM)
+  PERFORM check_kvgr4_shipping_name TABLES   tvbdpl
+                                    USING    vbdkl-spras
+                                    CHANGING sadr-name1.
+** modification ORBIS 15/03/2006 Nom expéditeur replacer
+* Modification ORBIS 15/03/2006 departure date
+  CLEAR: g_departure_date_flag,
+         g_departure_date_date ,
+         g_departure_date_time .
+* fin modification ORBIS 15/03/2006
+  CLEAR: g_arrival_date_flag.
+
+* Formular aufbereiten
+  PERFORM sd_delnote_suppl.
+  CHECK retcode = 0.
+
+* Formular schließen
+  PERFORM form_close.
+  CHECK retcode = 0.
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM GET_DATA                                                 *
+*---------------------------------------------------------------------*
+*       Daten für Formular besorgen                                   *
+*---------------------------------------------------------------------*
+FORM get_data.
+
+  PERFORM vbdkl_data.                  "Lieferungskopf und -liste
+  PERFORM vbpla_data.                  "Packliste
+
+* Lesen der Verkaufsbüroadresse
+  SELECT SINGLE * FROM tvbur WHERE vkbur = vbdkl-vkbur.
+  IF sy-subrc = 0.
+*   Lesen der zugehörigen Anschrift
+    vbpa-adrnr = tvbur-adrnr.
+    CLEAR vbadr.
+    CALL FUNCTION 'VIEW_VBADR'
+         EXPORTING
+              input   = vbpa
+              nrart   = 'XX'
+         IMPORTING
+              adresse = vbadr.
+  ENDIF.
+
+* Lesen des Abrufkopfes, dessen Termine die Lieferung veranlaßt haben.
+* geht z.Zt. noch nicht, da die intere Abrufnummer fehlt.
+* Es wird die Abrufnummer des Kunden benötigt, da fast alle Erstaus-
+* rüster diese Nummer in der Bestellnummer übergeben bekommen möchten.
+
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM FORM_OPEN                                                *
+*---------------------------------------------------------------------*
+*       Formular öffnen                                               *
+*---------------------------------------------------------------------*
+*  -->  US_SCREEN  Output on screen                                   *
+*                  ' ' = printer                                      *
+*                  'X' = screen                                       *
+*  -->  US_COUNTRY County for telecommunication and SET COUNTRY       *
+*---------------------------------------------------------------------*
+FORM form_open USING us_screen us_country.
+
+  SET LANGUAGE nast-spras.
+*NAST-SPRAS = 'F'.                           "%fa19980904
+  INCLUDE rvadopfo.
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM CHECK_REPEAT                                             *
+*---------------------------------------------------------------------*
+*       Wiederholdruck aus Nachrichtensteuerung erkennen.             *
+*---------------------------------------------------------------------*
+FORM check_repeat.
+
+  SELECT * INTO *nast FROM nast WHERE kappl = nast-kappl
+                                AND   objky = nast-objky
+                                AND   kschl = nast-kschl
+                                AND   spras = nast-spras
+                                AND   parnr = nast-parnr
+                                AND   parvw = nast-parvw
+                                AND   nacha BETWEEN '1' and '4'.
+    CHECK *nast-vstat = '1'.
+* call function 'WRITE_FORM'
+*      exporting
+*           element = 'REPEAT'
+*           window  = 'REPEAT'
+*      exceptions
+*           element = 1
+*           window  = 2.
+    IF sy-subrc NE 0.
+      PERFORM protocol_update.
+    ENDIF.
+* exit.
+  ENDSELECT.
+*** modif test
+  CALL FUNCTION 'WRITE_FORM'
+       EXPORTING
+            element = 'REPEAT'
+            window  = 'REPEAT'
+       EXCEPTIONS
+            element = 1
+            window  = 2.
+
+* Nombre d'exemplaire : -----------------------------------------------
+*   w_exemplaire = w_exemplaire + 1.
+* ---------------------------------------------------------------------
+*    exit.                            " Mise en commentaire de l'EXIT
+* endselect.
+* ---------------------------------------------------------------------
+* w_exemplaire = w_exemplaire + 1.
+*  *nast-anzal = w_exemplaire.
+* ---------------------------------------------------------------------
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM FORM_CLOSE                                               *
+*---------------------------------------------------------------------*
+*       Formular schließen                                            *
+*---------------------------------------------------------------------*
+FORM form_close.
+
+  CALL FUNCTION 'CLOSE_FORM'           "...Ende Formulardruck
+       EXCEPTIONS OTHERS = 1.
+  IF sy-subrc NE 0.
+    retcode = 1.
+    PERFORM protocol_update.
+  ENDIF.
+  SET COUNTRY space.
+  SET LANGUAGE space.
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM SD_DELNOTE_SUPPL                                         *
+*---------------------------------------------------------------------*
+*       Lieferschein aufbereiten                                      *
+*---------------------------------------------------------------------*
+FORM sd_delnote_suppl.
+
+  DATA: count LIKE sy-index.
+
+  DATA: BEGIN OF hvbplp OCCURS 0,     "Hilfstabelle Packlistenpositionen
+          stufe     TYPE i.
+          INCLUDE STRUCTURE vbplp.
+  DATA: END OF hvbplp.
+
+
+***** Gokul 08SEP2003
+  DATA: BEGIN OF hvbplp_sort OCCURS 0,
+          stufe     TYPE i,
+          um LIKE vbplp-unvel.
+          INCLUDE STRUCTURE vbplp.
+  DATA:   exidv   LIKE vekp-exidv.
+  DATA: END OF hvbplp_sort.
+*****
+
+*****
+  DATA: zlv_landx type landx.
+*****
+  DATA: BEGIN OF tvbplp OCCURS 0.      "Packlistenposition
+          INCLUDE STRUCTURE vbplp.
+  DATA: END OF tvbplp.
+
+  DATA: vs_element LIKE vbplp-venum.
+
+  CLEAR: w_matnr, w_vhilm, w_uevel2, w_posnr. "%fa19980904
+  CLEAR w_charg.                       "%fa19980824
+
+* Kopieren LVBPLP für direkt Zugriff
+  LOOP AT lvbplp.
+    MOVE-CORRESPONDING lvbplp TO tvbplp.
+    APPEND tvbplp.
+  ENDLOOP.
+*   <<<<<<<<<<<<<<<<<<<<<<<<<
+  CLEAR w_matnr.
+  LOOP AT tvbdpl.
+    w_matnr = tvbdpl-matnr.
+    READ TABLE tzvbdpl WITH  KEY   matnr = tvbdpl-matnr.
+
+    IF sy-subrc = 0.
+      tzvbdpl-lfimg = tzvbdpl-lfimg + tvbdpl-lfimg.
+      tzvbdpl-vrkme = tvbdpl-vrkme.
+      MODIFY tzvbdpl TRANSPORTING lfimg vrkme
+                         WHERE matnr = tvbdpl-matnr.
+
+    ELSE.
+      tzvbdpl-matnr = tvbdpl-matnr.
+      tzvbdpl-lfimg = tvbdpl-lfimg.
+      tzvbdpl-vrkme = tvbdpl-vrkme.
+      APPEND tzvbdpl.
+    ENDIF.
+
+  ENDLOOP.
+  CLEAR w_matnr.
+  CLEAR tvbdpl.
+  REFRESH mat_cums.
+
+*   <<<<<<<<<<<<<<<<<<<<<<<<<
+
+* Ausgabe VBDPL       => Lieferscheinposition
+  LOOP AT tvbdpl.
+
+* Lecture des zones complémentaires dans le poste
+    CLEAR: lips, ekpo.
+    SELECT SINGLE kannr vgbel vgpos vgtyp kvgr3
+           INTO CORRESPONDING FIELDS OF lips FROM lips
+           WHERE vbeln = vbdkl-vbeln
+             AND posnr = tvbdpl-posnr.
+
+* Modified by JSP 24/05/2005
+* Management of the RAN NUBMER of NISSAN
+    CLEAR: jitit,
+           jithd,
+           w_kanban_number,
+           w_jitte-reftx.
+
+    IF lips-kvgr3 = 'NIS'.
+      SELECT SINGLE * FROM jitit
+                      WHERE vbeln_vl = vbdkl-vbeln
+                      AND posnr_vl = tvbdpl-posnr.
+      IF sy-subrc = 0.
+        SELECT SINGLE * FROM jithd
+                        WHERE jinum = jitit-jinum.
+      ENDIF.
+      w_kanban_number = jithd-prodn.
+    ELSE.
+*      w_kanban_number = lips-kannr.
+*    ENDIF.
+* End of modification 24/05/2005
+
+
+* modification ORBIS 15/03/2006 departure date and RAN Number
+*   IF lips-kvgr3 NE 'NIS' AND lips-kannr IS INITIAL.
+*    CLEAR: jitit,
+*           jithd,
+*           w_kanban_number,
+*           w_jitte-reftx.
+*   check if JIT-position
+      IF NOT lips-vgbel IS INITIAL AND NOT lips-vgpos IS INITIAL.
+        DATA : l_dmy TYPE mandt,
+               l_reftx TYPE jit_reftx.
+
+        SELECT SINGLE mandt FROM vbak INTO l_dmy
+                            WHERE vbeln = lips-vgbel
+                            AND   vbtyp = 'E'
+                            AND   vbklt = 'J'.
+        IF sy-subrc = 0.
+*   JIT
+          SELECT SINGLE * FROM jitit
+                          WHERE vbeln_vl = tvbdpl-vbeln
+                          AND posnr_vl = tvbdpl-posnr.
+          IF sy-subrc = 0.
+            IF g_departure_date_flag NE 'X'.
+              IF likp-route+2(4) = '0000'.
+                g_departure_date_flag = 'X'.
+                CONVERT TIME STAMP jitit-rdate TIME ZONE 'UTC+1 '
+                        INTO DATE g_departure_date_date
+                             TIME g_departure_date_time.
+                g_departure_date_date = likp-lfdat.
+              ELSE.
+                g_arrival_date_flag = 'X'.
+* >>>> Martin Wagner: Arrival Date
+                gv_arrival_date_date = likp-lfdat.
+                gv_arrival_date_time = likp-lfuhr.
+
+                IF ZSD_TRAR_SCOPE = 'ARDT' OR
+                   ZSD_TRAR_SCOPE = 'ARTR'.
+                  DATA: lv_rdate TYPE JIT_RDATE.
+
+                  SELECT SINGLE ARDATE FROM ZSD_ARDATE INTO lv_rdate
+                         WHERE vbeln = tvbdpl-vbeln.
+                  IF sy-subrc EQ 0.
+                    CLEAR: gv_arrival_date_date, gv_arrival_date_time.
+                    CONVERT TIME STAMP lv_rdate TIME ZONE 'UTC+1 '
+                            INTO DATE gv_arrival_date_date
+                                 TIME gv_arrival_date_time.
+
+                  ENDIF.
+                ENDIF.
+* <<<<<< End Arrival Date
+              ENDIF.
+
+            ENDIF.
+*  JSP (17/05/2006) : Select the CALDEL NUMBER of PCA or RAN of Renault
+            SELECT SINGLE reftx FROM jitte INTO w_jitte-reftx
+                                WHERE jinum = jitit-jinum
+                                AND posid = jitit-posid
+                                AND refty = 'AW'.
+            IF sy-subrc = 0.
+              w_kanban_number = w_jitte-reftx.
+            ENDIF.
+*  JSP (17/05/2006) : Select the CALDEL NUMBER of PCA or RAN of Renault
+
+*             IF NOT jitit-grpin IS INITIAL.
+*               w_kanban_number = jitit-grpin.
+*             ELSE.
+*               SELECT SINGLE reftx FROM jitte INTO l_reftx
+*                                   WHERE jinum = jitit-jinum
+*                                   AND   posid = jitit-posid
+*                                   AND   refty = 'ZR'.
+*               IF sy-subrc = 0.
+*                 w_kanban_number = l_reftx.
+*               ELSE.
+*                 SELECT SINGLE * FROM jithd
+*                                 WHERE jinum = jitit-jinum.
+*                 IF NOT jithd-sspez IS INITIAL.
+*                   w_kanban_number = jithd-sspez.
+*                 ELSE.
+*                   w_kanban_number = jithd-prodn.
+*                 ENDIF.
+*              ENDIF.
+*            ENDIF.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+* fin modification ORBIS 15/03/2006 departure date and RAN Number
+
+* Si doc. achat à l'origine, contrôle si flux interdiv (EKPO-PSTYP = 7)
+      IF lips-vgtyp = 'V'.
+        SELECT SINGLE pstyp
+               INTO CORRESPONDING FIELDS OF ekpo FROM ekpo
+               WHERE ebeln = lips-vgbel
+                 AND ebelp = lips-vgpos.
+      ENDIF.
+      w_matnr2 = tvbdpl-matnr.
+* Dans le cas de l'interdiv article client = réf interne
+      IF ekpo-pstyp = '7'.
+        tvbdpl-idnkd = tvbdpl-matnr.
+        CLEAR w_matnr2.
+      ENDIF.
+
+*** Following code added SD-0004 Gokul 12AUG2003
+      CLEAR w_matnr2.
+*** End of addition SD-004 Gokul 12AUG2003
+
+      IF tvbdpl-lfimg IS INITIAL.        " %fa19980824
+* pas de quantité : 1 ere ligne de PRELEMT ARTICLE lorsque LOT
+        READ TABLE tzvbdpl WITH  KEY   matnr = tvbdpl-matnr.
+        tvbdpl-lfimg = tzvbdpl-lfimg.
+        tvbdpl-vrkme = tzvbdpl-vrkme.
+        w_ligne1 = '1'.
+
+      ELSE.
+* Qtté + lot : on ne réédite pas la ligne 1
+        IF tvbdpl-charg NE space.
+          CLEAR w_ligne1.
+        ELSE.
+* Qtté sans lot : on réédite
+          w_ligne1 = 'X'.
+        ENDIF.
+      ENDIF.
+*FIN                                               " %fa19980824
+
+*----------------------------------------------------------------------
+* -> Modification ORBIS 21/11/2005
+* Peugeot quantité cumuler par référence
+      IF nast-dsuf2 CS 'PE'.
+* linie avec cum's deja ecrit?
+        READ TABLE mat_cums WITH KEY matnr = tvbdpl-matnr
+                                         vgpos = tvbdpl-vgpos
+                                         vgbel = tvbdpl-vgbel.
+        IF sy-subrc = 0.
+          CLEAR tvbdpl-lfimg.
+        ELSE.
+          CLEAR mat_cums-anzcolli.
+          READ TABLE tzvbdpl WITH  KEY   matnr = tvbdpl-matnr.
+          IF sy-subrc = 0.
+            tvbdpl-lfimg = tzvbdpl-lfimg.
+            tvbdpl-vrkme = tzvbdpl-vrkme.
+            mat_cums-matnr = tvbdpl-matnr.
+            mat_cums-posnr = tvbdpl-posnr.
+            mat_cums-vgbel = tvbdpl-vgbel.
+            mat_cums-vgpos = tvbdpl-vgpos.
+            mat_cums-lfimg = tzvbdpl-lfimg.
+* quantity and typ UC
+            LOOP AT tvbplp
+                 WHERE  matnr = tvbdpl-matnr
+                 AND vgbel = tvbdpl-vgbel AND vgpos = tvbdpl-vgpos .
+              mat_cums-anzcolli = mat_cums-anzcolli + 1.
+              mat_cums-vemng = tvbplp-vemng.
+             READ TABLE lvbplk INTO vbplk WITH KEY venum = tvbplp-venum.
+              IF sy-subrc = 0.
+                mat_cums-vhilm = vbplk-vhilm_ku.
+              ENDIF.
+            ENDLOOP.
+            APPEND mat_cums.
+          ENDIF.
+        ENDIF.
+      ELSE.
+        CLEAR mat_cums.
+      ENDIF.
+      w_kanban_number_save = w_kanban_number.
+* <- Modification ORBIS 21/11/2005
+*----------------------------------------------------------------------
+
+
+* RLT/BVD - Gestion de l'édition des emballages
+      IF NOT w_avec_embal = 'O'
+* RLT/BVD - 17/10/02 - ne pas faire le contrôle sur les postes < 900000
+         AND tvbdpl-posnr >= 900000.
+* RLT/BVD - Imprimer tous les postes sauf les emballages
+        CHECK tvbdpl-posar NE 'C'.         "keine Packstückpositionen
+      ENDIF.
+* RLT/BVD - Fin de modif
+
+      CALL FUNCTION 'CONTROL_FORM'
+           EXPORTING
+                command = 'PROTECT'.
+      IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+
+      vbdpl = tvbdpl.
+
+** modification ORBIS 15/03/2006 code international du pays
+** Wagner 29/09/06: Alles Quatsch, MARC-HERKL lesen
+*   w_pays_origine = tvst-aland.
+    SELECT SINGLE HERKL FROM MARC INTO w_pays_origine
+           WHERE matnr = vbdpl-matnr
+           AND   werks = vbdpl-werks.
+    IF w_pays_origine IS INITIAL.
+      w_pays_origine = tvst-aland.
+    ENDIF.
+*>>> Martin Wagner: Country of Origin + Country name
+    SELECT SINGLE LANDX INTO zlv_landx
+           FROM T005T
+           WHERE land1 = w_pays_origine
+           AND   spras = nast-spras.
+
+    w_pays_orig_name = w_pays_origine.
+    w_pays_orig_name+04(15) = zlv_landx.
+*<<< End Wagner
+
+*** SD le 25/01/99 : recherche du libelle du pays origine
+*** a modifier car le pays d'origine n'est pas initialise pour client
+***francais
+***   perform z_libelle_pays using vbdpl-herkl.
+**    PERFORM z_libelle_pays USING tvst-aland.
+**
+**    CLEAR w_pays_origine.
+**    MOVE t005t-landx TO w_pays_origine.
+** fin modification ORBIS 15/03/2006 code international du pays
+
+***********************************************************************
+*** modif JD 02/03/99 - recherche de l'unité
+      CLEAR t006.
+      SELECT SINGLE * FROM t006 WHERE msehi = vbdpl-vrkme.
+      zinv-unite_fact = t006-isocode.
+
+*** fin modif JD - unité
+
+*** modif du 21/05/99 - affectation du numéro de commande
+      IF NOT w-numcde IS INITIAL.
+        vbdpl-bstnk = w-numcde.
+      ENDIF.
+
+*** modif JD 02/03/99 - recherche du commentaire de poste
+      SELECT SINGLE * FROM tvlp
+          WHERE pstyv = vbdpl-pstyv.
+*** Following lines commented and new lines added - SD-0004
+*** Gokul 12AUG2003
+
+*    SELECT * FROM TTXER
+*        WHERE TXTGR = TVLP-TXTGR
+*         AND TDOBJECT = 'VBBP'.
+*      EXIT.
+*    ENDSELECT.
+      SELECT * FROM ttxer
+              WHERE txtgr    = tvlp-txtgr
+                AND tdobject = 'VBBP'
+                AND tdid     = '0002'.
+        EXIT.
+      ENDSELECT.
+
+*** End of modification - SD-0004 Gokul 12AUG2003
+*** fin modif JD - commentaires
+
+*----------------------------------------------------------------------
+* -> Modification ORBIS 21/11/2005
+* Peugeot quantité cumuler par référence
+      IF mat_cums IS INITIAL OR
+         mat_cums-posnr = tvbdpl-posnr.
+        IF NOT mat_cums IS INITIAL.
+          CLEAR w_kanban_number.
+        ENDIF.
+* <- Modification ORBIS 21/11/2005
+*----------------------------------------------------------------------
+        IF w_ligne1 = 'X'                  " %fa19980824
+        OR w_ligne1 = '1'.                 " %fa19980824
+          WRITE vbdpl-lfimg TO f_lfimg DECIMALS 0.
+          CALL FUNCTION 'WRITE_FORM'
+               EXPORTING
+                    element = 'ITEM_LINE'.
+          IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+          CHECK NOT tvbdpl-lfimg IS INITIAL.            " %fa19980824
+        ENDIF.                             " %fa19980824
+*----------------------------------------------------------------------
+* -> Modification ORBIS 21/11/2005
+* Peugeot quantité cumuler par référence
+        IF NOT mat_cums IS INITIAL.
+          w_kanban_number = w_kanban_number_save.
+        ENDIF.
+      ENDIF.
+* <- Modification ORBIS 21/11/2005
+*----------------------------------------------------------------------
+
+
+* RLT/BVD - 17/12/02 - pas de protection pour l'ensemble des étiquettes
+      CALL FUNCTION 'CONTROL_FORM'
+           EXPORTING
+                command = 'ENDPROTECT'.
+      IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+* RLT/BVD - 17/12/02 - fin de modification
+
+* %fa : Recherche de la société
+      SELECT SINGLE * FROM  t001w
+             WHERE  werks = vbdpl-werks.
+
+      SELECT SINGLE * FROM  t001k
+             WHERE  bwkey = t001w-bwkey.
+
+      SELECT SINGLE * FROM  t001
+             WHERE  bukrs = t001k-bukrs.
+
+********** debut modif G002/SD**************************************
+      CLEAR *adrc.
+      SELECT * FROM *adrc
+      WHERE addrnumber = t001-adrnr.
+        EXIT.
+      ENDSELECT.
+      IF NOT adrc IS INITIAL.
+        CLEAR tsad3t.
+        SELECT SINGLE * FROM tsad3t
+           WHERE langu = *adrc-langu
+           AND title = *adrc-title.
+
+         *sadr-anred = tsad3t-title_medi.
+         *sadr-stras = *adrc-street.
+         *sadr-name1 = *adrc-name1.
+         *sadr-pfach = *adrc-po_box.
+         *sadr-pstl2 = *adrc-post_code2.
+         *sadr-ort01 = *adrc-city1.
+         *sadr-pstlz = *adrc-post_code1.
+         *sadr-land1 = *adrc-country.
+         *sadr-regio = *adrc-region.
+      ENDIF.
+********** fin  modif G002/SD**************************************
+
+** modification ORBIS 15/03/2006 code international du pays
+       *sadr-name4 = *sadr-land1.
+****** modif JD 02/03/99 recherche du pays de l'expediteur
+**    PERFORM z_libelle_pays USING *sadr-land1.
+**    MOVE t005t-landx TO *sadr-name4.
+**    TRANSLATE *sadr-name4 TO UPPER CASE.
+****** fin de modif JD - recherche du pays
+** fin modification ORBIS 15/03/2006 code international du pays
+
+** RLT 4/12/02 - Remplacement de la désignation de l'emballage
+**               par le n° d'article client
+      LOOP AT lvbpls.
+        CLEAR knmt.
+        SELECT SINGLE kdmat
+               INTO CORRESPONDING FIELDS OF knmt FROM knmt
+               WHERE vkorg = vbdkl-vkorg
+               AND vtweg = tvbdpl-vtweg
+               AND kunnr = vbdkl-kunnr
+               AND matnr = lvbpls-vhilm.
+        IF sy-subrc = 0 AND NOT knmt-kdmat IS INITIAL.
+          lvbpls-vebez = knmt-kdmat.
+          MODIFY lvbpls.
+        ENDIF.
+      ENDLOOP.
+
+*    select * from  *sadr                  "modif G002/SD
+*           where  adrnr = t001-adrnr.     "modif G002/SD
+*      exit.                               "modif G002/SD
+*    endselect.                            "modif G002/SD
+*                                          "modif G002/SD
+*    if sy-subrc ne 0.                     "modif G002/SD
+*      clear: *sadr.                       "modif G002/SD
+*    endif.                                "modif G002/SD
+* FIN %fa
+*
+* Ajout T.D
+      DATA : w_new-poste TYPE c VALUE 'X'.
+      w_new-poste = 'X'.
+* Fin AJOUT
+      CLEAR   hvbplp.
+      REFRESH hvbplp.
+* Aufbau Versandelementstruktur für Ausgabe
+      LOOP AT tvbplp
+** RLT : Problème d'édition multiple des HU dans le cas de split de
+*** poste
+** Il faut prendre le n° de livraison et non le n° de doc commercial
+***  d'origine !!!
+           WHERE ( posnr = tvbdpl-posnr ).
+*         WHERE ( VBELN = VBDKL-VBELN AND POSNR = TVBDPL-POSNR ).
+*           or ( VGBEL = TVBDPL-VGBEL AND VGPOS = TVBDPL-VGPOS ).
+        hvbplp-stufe = 1.
+        MOVE-CORRESPONDING tvbplp  TO hvbplp.
+        APPEND hvbplp.
+
+        vs_element = tvbplp-venum.
+        IF vs_element EQ ' '. EXIT. ENDIF.         "unverpackt
+        CLEAR lvbplk.
+        WHILE lvbplk-kzobe NE 'X'.       "nicht oberstes VS-Ele
+*       suchen übergeordnetes Versandelement
+          LOOP AT lvbplp WHERE unvel = vs_element.
+            hvbplp-stufe = hvbplp-stufe + 1.
+            MOVE-CORRESPONDING lvbplp  TO hvbplp.
+            APPEND hvbplp.
+            EXIT.
+          ENDLOOP.
+          vs_element = lvbplp-venum.
+*       lesen übergeordnetes Versandelement
+          READ TABLE lvbplk WITH KEY vs_element.
+          IF sy-subrc NE 0.
+            EXIT.
+          ENDIF.
+        ENDWHILE.
+      ENDLOOP.
+
+* Debut Ajout contre bug Nb de colis<<<<<<<<<<<<<<<<<< %fa19980904
+      CLEAR tz_zetq02.
+      REFRESH tz_zetq02.
+
+      SORT hvbplp BY stufe venum.
+      CLEAR vbplp.
+
+      LOOP AT hvbplp.
+        CLEAR vbplk.
+        CLEAR vbpls.
+
+        IF hvbplp-venum NE ' '.
+          MOVE-CORRESPONDING hvbplp TO vbplp.
+          READ TABLE lvbplk WITH KEY vbplp-venum.
+          IF hvbplp-unvel EQ space.
+            IF lvbplk-uevel NE space.
+              IF lvbplk-uevel NE w_uevel
+                OR w_new-poste = 'X'.
+                CLEAR :  w_new-poste, w_uevel.
+                PERFORM  f-compt-poste.
+              ENDIF.
+            ELSE.
+              PERFORM  f-compt-poste.
+            ENDIF.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+* Fin ajout   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< %fa19980904
+
+      CLEAR hvbplp_sort.
+      REFRESH hvbplp_sort.
+
+      LOOP AT hvbplp.
+
+        MOVE-CORRESPONDING hvbplp TO hvbplp_sort.
+
+        LOOP AT lvbplp WHERE unvel EQ hvbplp-venum.
+          hvbplp_sort-um = lvbplp-venum.
+        ENDLOOP.
+
+        READ TABLE lvbplk WITH KEY hvbplp-venum.
+        IF sy-subrc NE 0. CLEAR lvbplk. ENDIF.
+        hvbplp_sort-exidv = lvbplk-exidv.
+
+        APPEND hvbplp_sort.
+
+      ENDLOOP.
+
+      SORT hvbplp_sort BY stufe um exidv venum.
+
+      CLEAR hvbplp.
+      REFRESH hvbplp.
+
+      LOOP AT  hvbplp_sort.
+
+        MOVE-CORRESPONDING hvbplp_sort TO hvbplp.
+        APPEND hvbplp.
+
+      ENDLOOP.
+
+*----------------------------------------------------------------------
+* -> Modification ORBIS 31/07/2005
+
+DATA :    hvbplp_sort_stufe1 LIKE hvbplp_sort OCCURS 0 WITH HEADER LINE,
+                                      hvbplp_sort_merk LIKE hvbplp_sort,
+                                                         h_count TYPE i,
+                                              h_ind_start LIKE sy-tabix,
+                                                    h_ind LIKE sy-tabix,
+                                                        h_iv_anz TYPE i,
+                                                          h_rest TYPE i,
+                                   l_exidv_start LIKE hvbplp_sort-exidv,
+                                  l_exidv_aktuel LIKE hvbplp_sort-exidv,
+                                    l_exidv_next LIKE hvbplp_sort-exidv,
+                                              h_ind_next  LIKE sy-tabix,
+                                                    h_bearbeitet TYPE i,
+                                             BEGIN OF lt_exidv OCCURS 0,
+                                           exidv LIKE hvbplp_sort-exidv,
+                                                        END OF lt_exidv.
+
+      REFRESH : hvbplp_sort_stufe1, hvbplp_sort_iv.
+
+      IF nast-dsuf1 EQ 'UC  '. " nur wenn UC ausgegeben werden
+
+* UC par interval
+
+        LOOP AT hvbplp_sort INTO hvbplp_sort_stufe1 WHERE stufe = 1.
+          APPEND hvbplp_sort_stufe1.
+        ENDLOOP.
+
+        LOOP AT hvbplp_sort_stufe1.
+          IF hvbplp_sort_merk-um = hvbplp_sort_stufe1-um AND
+             hvbplp_sort_merk-vbeln = hvbplp_sort_stufe1-vbeln AND
+             hvbplp_sort_merk-posnr = hvbplp_sort_stufe1-posnr AND
+             hvbplp_sort_stufe1-um NE space.
+            " überspringen
+          ELSE.
+            " Intervalle bilden
+            CLEAR h_count.
+            REFRESH lt_exidv.
+            LOOP AT hvbplp_sort WHERE um = hvbplp_sort_stufe1-um AND
+                                   vbeln = hvbplp_sort_stufe1-vbeln AND
+                                   posnr = hvbplp_sort_stufe1-posnr AND
+                                   um NE space.
+              h_count = sy-tabix.
+              lt_exidv = hvbplp_sort-exidv.
+              APPEND lt_exidv.
+            ENDLOOP.
+            IF h_count = 0.
+              CLEAR hvbplp_sort_iv.
+              MOVE-CORRESPONDING hvbplp_sort_stufe1 TO hvbplp_sort_iv.
+              APPEND hvbplp_sort_iv.
+            ELSEIF h_count = 1.
+              CLEAR hvbplp_sort_iv.
+              MOVE-CORRESPONDING hvbplp_sort TO hvbplp_sort_iv.
+              APPEND hvbplp_sort_iv.
+            ELSEIF h_count > 1.
+
+              h_bearbeitet = 0.
+              WHILE h_bearbeitet < h_count.
+                " mehrere Unter HU's und evtl. mehrere Intervalle
+                LOOP AT lt_exidv.
+                  h_ind = sy-tabix.
+                  l_exidv_aktuel = lt_exidv-exidv.
+                  IF h_ind = 1.
+                    l_exidv_start = lt_exidv-exidv.
+                  ELSE.
+                    l_exidv_next = l_exidv_start + sy-tabix - 1.
+                    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+                         EXPORTING
+                              input  = l_exidv_next
+                         IMPORTING
+                              output = l_exidv_next.
+                    IF l_exidv_aktuel NE l_exidv_next.
+                      h_ind = h_ind - 1.
+                      EXIT.
+                    ENDIF.
+                  ENDIF.
+                ENDLOOP.
+                IF h_ind = 1.
+                  " einzelne HU
+                  READ TABLE hvbplp_sort INTO hvbplp_sort
+                                      WITH KEY
+                                          um = hvbplp_sort_stufe1-um
+                                       vbeln = hvbplp_sort_stufe1-vbeln
+                                       posnr = hvbplp_sort_stufe1-posnr
+                                       exidv = l_exidv_start.
+                  CLEAR hvbplp_sort_iv.
+                  MOVE-CORRESPONDING hvbplp_sort TO hvbplp_sort_iv.
+                  APPEND hvbplp_sort_iv.
+                ELSE.
+                  " Intervall
+                  CLEAR hvbplp_sort_iv.
+                  READ TABLE hvbplp_sort INTO hvbplp_sort
+                                      WITH KEY
+                                          um = hvbplp_sort_stufe1-um
+                                       vbeln = hvbplp_sort_stufe1-vbeln
+                                       posnr = hvbplp_sort_stufe1-posnr
+                                       exidv = l_exidv_start.
+                  IF h_bearbeitet > 0.
+                    " zusätzliche Intervallzeile
+                    hvbplp_sort_iv-flg_iv_neu = 'X'.
+                  ELSE.
+                    hvbplp_sort_iv-flg_iv_neu = ' '.
+                  ENDIF.
+                  MOVE-CORRESPONDING hvbplp_sort TO hvbplp_sort_iv.
+                  hvbplp_sort_iv-flg_iv = 'X'.
+                  READ TABLE lt_exidv INDEX h_ind.
+                  hvbplp_sort_iv-exidv_iv_end = lt_exidv-exidv.
+                  APPEND hvbplp_sort_iv.
+                ENDIF.
+
+                DELETE lt_exidv FROM 1 TO h_ind.
+                h_bearbeitet = h_bearbeitet + h_ind.
+              ENDWHILE.
+            ENDIF.
+          ENDIF.
+          hvbplp_sort_merk = hvbplp_sort_stufe1.
+        ENDLOOP.
+
+* Rest anhängen
+        LOOP AT hvbplp_sort WHERE stufe NE 1.
+          CLEAR: hvbplp_sort_iv.
+          MOVE-CORRESPONDING hvbplp_sort TO hvbplp_sort_iv.
+          APPEND hvbplp_sort_iv.
+        ENDLOOP.
+
+      ELSE.  " nur wenn UC ausgegeben werden
+
+        LOOP AT hvbplp_sort.
+          CLEAR: hvbplp_sort_iv.
+          MOVE-CORRESPONDING hvbplp_sort TO hvbplp_sort_iv.
+          APPEND hvbplp_sort_iv.
+        ENDLOOP.
+
+      ENDIF.
+
+* <- Modification ORBIS 31/07/2005
+*----------------------------------------------------------------------
+
+
+      CLEAR w_loop.                      "%fa
+      CLEAR vbplp.
+
+*----------------------------------------------------------------------
+* -> Modification ORBIS 21/02/2005
+*   loop at hvbplp.
+      LOOP AT hvbplp_sort_iv.
+        MOVE-CORRESPONDING hvbplp_sort_iv TO hvbplp.
+* <- Modification ORBIS 21/02/2005
+*----------------------------------------------------------------------
+
+*----------------------------------------------------------------------
+* -> Modification ORBIS 21/11/2005
+* Peugeot quantité cumuler par référence
+
+        IF w_kanban_number_save = w_kanban_number_last.
+          CLEAR w_kanban_number.
+        ELSE.
+          w_kanban_number = w_kanban_number_save.
+        ENDIF.
+        w_kanban_number_last = w_kanban_number_save.
+* <- Modification ORBIS 21/11/2005
+*----------------------------------------------------------------------
+
+        w_loop = w_loop + 1.             "%fa
+
+*     lesen Versandelement
+        CLEAR vbplk.
+        CLEAR vbpls.
+
+        IF hvbplp-venum EQ ' '.
+          IF  w_ligne1 NE '1'.           "%fa19980824
+            MOVE text-001 TO vbplk-vhilm."unverpackt
+            MOVE-CORRESPONDING hvbplp TO vbplp.
+            CALL FUNCTION 'WRITE_FORM'
+                 EXPORTING
+                      element = 'ITEM_WITHOUT_PACKING'.
+            IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+*       EXIT.                          "unverp. Pos nur einmal enthalten
+          ENDIF.                         "%fa19980824
+        ELSE.
+          IF vbplp-venum NE hvbplp-venum.
+            MOVE-CORRESPONDING hvbplp TO vbplp.
+            READ TABLE lvbplk WITH KEY vbplp-venum.
+            IF sy-subrc NE 0. EXIT. ENDIF.
+* ---------------------------------------------------------------------
+* Test sur existence d'une UC(carton) rattachée à l'emballage
+* %fa
+            IF hvbplp-unvel EQ space.
+* Si cette zone est renseignée, l'élement d'emballage est une palette :
+* on n'édite pas la ligne
+* ---------------------------------------------------------------------
+
+              vbplk = lvbplk.
+
+* ---------------------------------------------------------------------
+* Recherche du N° d'emballage externe pour l'UM (emballage supérieur)
+* %fa   Elément d'emballage supérieur :
+* Début Modif T.D
+*            if lvbplk-uevel ne space.
+              IF lvbplk-uevel NE lvbplk-venum.
+
+                IF vbdpl-posnr NE w_posnr
+                AND lvbplk-uevel = w_uevel.
+                  CLEAR vekp.            " si identique
+                  SELECT SINGLE * FROM  vekp
+                         WHERE  venum = lvbplk-uevel.
+* ---> VEKP-EXIDV = N° d'emballage externe
+*                w_uevel = lvbplk-uevel." dernier élément lu
+                  CLEAR w_no_vbpls.
+                ENDIF.
+*
+* Fin Modif T.D
+*
+                IF lvbplk-uevel NE w_uevel.  " Test avec le précédent
+                  " pour ne pas le réécrire
+**Folllowing one line inserted -GOKUL 20NOV2003
+                  print_line = 'X'.
+
+
+                  CLEAR vekp.            " si identique
+                  SELECT SINGLE * FROM  vekp
+                         WHERE  venum = lvbplk-uevel.
+* ---> VEKP-EXIDV = N° d'emballage externe
+                  w_uevel = lvbplk-uevel." dernier élément lu
+                  CLEAR w_no_vbpls.
+
+* Incrémentation du compteur "Nbre total UM"
+* Insertion du N° d'UM dans la table interne T_ZETQ03 si inexistant
+*
+                  PERFORM f-compteur-um USING vekp-exidv.
+                ELSE.
+* Traitement pour ne pas le réécrire les données sur lignes suivantes :
+                  IF NOT ( vbdpl-posnr NE w_posnr
+                  AND lvbplk-uevel = w_uevel ).
+                    CLEAR: vekp-exidv.   "N° U.M."
+                  ENDIF.
+                  w_no_vbpls = 'X'.      "Type de colis"
+                  CLEAR vbpls.
+                ENDIF.
+
+              ELSE.
+* Sinon le N° d'étiquette UC est repris dans la zone "N° U.M."
+                vekp-exidv = lvbplk-exidv.
+                print_line = 'X'.
+
+* Incrémentation du compteur "Nbre total UM"
+* Insertion du N° d'UM dans la table interne T_ZETQ03 si inexistant
+
+                PERFORM f-compteur-um USING lvbplk-exidv.
+
+              ENDIF.
+
+* Gestion LOT
+              PERFORM f-charg.           " %fa
+
+
+*         lesen zugeordnetes Versandhilfsmittel
+              READ TABLE lvbpls WITH KEY vbplk-vhilm.
+              IF sy-subrc NE 0. EXIT. ENDIF.
+
+              IF lvbplk-veltp CA veltp_vp OR
+                 lvbplk-veltp CA veltp_vph.
+
+* ---------------------------------------------------------------------
+* GESTION de l'édition selon changement sur LOT
+* Si nouveau CHARG : édition d'un mouvel élément de texte
+*              IF ZETQ02-CHARG NE W_CHARG.             "%fa
+                "On réédite le type de colis et le N°UM
+                w_new_item_packing = 'X'.             "%fa
+                w_no_vbpls = ''.       "%fa
+
+* %fa  Pas de recherche pour édition du "Type de colis" et "N°UM"
+* (lorsque redondance)
+                IF w_no_vbpls NE 'X'.    "%fa
+                  vbpls = lvbpls.
+                  IF w_loop <> '1'.
+                    CLEAR vbpls-anzpk.   "%fa
+                  ENDIF.
+                ENDIF.                   "%fa
+
+* Ajout contre bug sur Nb de colis  <<<<<<<<       %fa19980904
+                CLEAR tz_zetq02.
+                READ TABLE tz_zetq02 WITH  KEY
+                                       matnr = vbdpl-matnr
+                                       charg = vbdpl-charg
+                                       uevel = vbplk-uevel
+                                       posnr = vbdpl-posnr
+                                       vhilm  = vbplk-vhilm .
+
+* Pour ne pas réécrire le type de colis         "%fa19980824
+                IF  tz_zetq02-vhilm = w_vhilm
+                AND tz_zetq02-matnr = w_matnr
+                AND tz_zetq02-uevel = w_uevel2
+                AND tz_zetq02-posnr = w_posnr
+                AND tz_zetq02-charg = w_charg.
+                  IF w_loop <> '1'.      "%fa19980824
+                    CLEAR vbpls.         "%fa19980824
+                  ENDIF.                 "%fa19980824
+                ELSE.                    "%fa19980824
+                  w_vhilm = tz_zetq02-vhilm.
+                  w_matnr = tz_zetq02-matnr.
+                  w_charg = tz_zetq02-charg.
+                  w_uevel2 = tz_zetq02-uevel.
+                  w_posnr = tz_zetq02-posnr.
+                  vbpls = lvbpls.
+                  vbpls-anzpk = tz_zetq02-obzae.
+
+                ENDIF.                   "%fa19980824
+* Fin ajout  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<       %fa19980904
+
+                IF ( w_loop <> '1' ).
+
+
+               IF nast-dsuf1 EQ 'UC  '.     " Added on 17SEP2003 - Gokul
+                    IF NOT mat_cums IS INITIAL.
+                      CALL FUNCTION 'WRITE_FORM'             "%fa
+                           EXPORTING       "%fa
+                                element = 'ITEM_PACKING_RED_PE'."%fa
+                   IF sy-subrc NE 0. PERFORM protocol_update. ENDIF."%fa
+                    ELSE.
+                      CALL FUNCTION 'WRITE_FORM'             "%fa
+                           EXPORTING       "%fa
+                                element = 'ITEM_PACKING_RED'."%fa
+                   IF sy-subrc NE 0. PERFORM protocol_update. ENDIF."%fa
+                    ENDIF.
+***** Following lines added - GOKUL 20NOV2003
+
+                  ELSEIF print_line = 'X'.
+
+                    CLEAR vbplk-exidv.
+                    CLEAR print_line.
+                    IF NOT mat_cums IS INITIAL.
+                      CALL FUNCTION 'WRITE_FORM'             "%fa
+                           EXPORTING       "%fa
+                                element = 'ITEM_PACKING_RED_PE'."%fa
+                      IF sy-subrc NE 0.                    "%fa
+                        PERFORM protocol_update.            "%fa
+                      ENDIF.                                 "%fa
+                    ELSE.
+                      CALL FUNCTION 'WRITE_FORM'
+                           EXPORTING
+                                element = 'ITEM_PACKING_RED_00'.
+                      IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+                    ENDIF.
+***** End of addition - GOKUL 20NOV2003
+
+               ENDIF.                       " Added on 17SEP2003 - Gokul
+
+                ELSE.
+***** Following one line added - 20NOV2003
+
+                  CLEAR print_line.
+
+                IF nast-dsuf1 NE 'UC  '.    " Added on 17SEP2003 - Gokul
+                CLEAR vbplk-exidv.          " Added on 17SEP2003 - Gokul
+                ENDIF.                      " Added on 17SEP2003 - Gokul
+
+                  IF NOT mat_cums IS INITIAL.
+                    CALL FUNCTION 'WRITE_FORM'             "%fa
+                         EXPORTING       "%fa
+                              element = 'ITEM_PACKING_RED_PE'."%fa
+                   IF sy-subrc NE 0. PERFORM protocol_update. ENDIF."%fa
+                  ELSE.
+                    CALL FUNCTION 'WRITE_FORM'             "%fa
+                         EXPORTING       "%fa
+                              element = 'ITEM_PACKING_RED_00'."%fa
+                   IF sy-subrc NE 0. PERFORM protocol_update. ENDIF."%fa
+                  ENDIF.
+                ENDIF.                   "%fa
+              ENDIF.
+            ENDIF.                       "%fa
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+* RLT/BVD - Si aucun colisage, édition de la ligne de ref article + n°
+* cmde
+      IF sy-subrc <> 0.
+        CLEAR vbplk-vhilm.
+        CALL FUNCTION 'WRITE_FORM'
+             EXPORTING
+                  element = 'ITEM_WITHOUT_PACKING'.
+        IF sy-subrc NE 0. PERFORM protocol_update. ENDIF.
+      ENDIF.
+* RLT/BVD - Fin de modification
+*{   INSERT         D01K921919                                        1
+* Martin Wagner, Airax: Production Text
+  IF nast-kschl = 'ZFI2'.
+  CLEAR:  ZZPROD_TEXT.
+    ZZPROD_TEXT+00(10) = vbdpl-vgbel.
+    ZZPROD_TEXT+10(06) = vbdpl-vgpos.
+  ENDIF.
+*}   INSERT
+
+* affichage des commentaires de poste
+      CALL FUNCTION 'WRITE_FORM'
+           EXPORTING
+                element = 'ITEM_COMMENT'
+                window  = 'MAIN'.
+
+* RLT/BVD - 17/12/02 - pas de protection pour l'ensemble des étiquettes
+*    CALL FUNCTION 'CONTROL_FORM'
+*         EXPORTING
+*              COMMAND = 'ENDPROTECT'.
+*    IF SY-SUBRC NE 0. PERFORM PROTOCOL_UPDATE. ENDIF.
+* RLT/BVD - 17/12/02 - fin de modification
+
+    ENDLOOP.
+
+** RLT/BVD - 14/11/02 - Ajout recap avec les postes d'emballage générés
+    DATA: wv_first.
+    wv_first = 'X'.
+    CALL FUNCTION 'CONTROL_FORM'
+         EXPORTING
+              command = 'PROTECT'.
+    LOOP AT tvbdpl WHERE posnr >= '900000'.
+      IF NOT wv_first IS INITIAL.
+        CALL FUNCTION 'WRITE_FORM'
+             EXPORTING
+                  element = 'HDR_RECAP_EMBALLAGE'
+             EXCEPTIONS
+                  OTHERS  = 9.
+        CLEAR wv_first.
+      ENDIF.
+      CLEAR lvbpls.
+      READ TABLE lvbpls WITH KEY vhilm = tvbdpl-matnr.
+      IF NOT lvbpls-vebez IS INITIAL.
+        tvbdpl-arktx = lvbpls-vebez.
+      ENDIF.
+      CALL FUNCTION 'WRITE_FORM'
+           EXPORTING
+                element = 'RECAP_EMBALLAGE'
+           EXCEPTIONS
+                OTHERS  = 9.
+    ENDLOOP.
+    CALL FUNCTION 'CONTROL_FORM'
+         EXPORTING
+              command = 'ENDPROTECT'.
+** Fin de modif.
+
+
+*** modif JD 02/03/99 - recherche des schémas de texte de  l'entete
+*** Following lines commented and new code added - SD-0004
+*** Gokul 12AUG2003
+
+*  SELECT SINGLE * FROM TVLK
+*       WHERE LFART = VBDKL-LFART.
+*  SELECT * FROM TTXER
+*        WHERE TXTGR = TVLK-TXTGR
+*         AND TDOBJECT = 'VBBK'.
+*    CHECK TTXER-TDID NE 'Z007'.
+*    CHECK TTXER-TDID NE 'Z008'.
+*    EXIT.
+*  ENDSELECT.
+
+    SELECT SINGLE * FROM tvlk
+                   WHERE lfart = vbdkl-lfart.
+    SELECT * FROM *ttxer
+                   WHERE txtgr     = tvlk-txtgr
+                     AND tdobject  = 'VBBK'
+                     AND tdid      = '0001'.
+      EXIT.
+    ENDSELECT.
+
+*** End of modification - SD-0004 Gokul 12AUG2003.
+
+    CALL FUNCTION 'WRITE_FORM'
+         EXPORTING
+              window = 'COMMENTA'.
+
+*** fin modif JD
+
+*** modif JD 02/03/99 - recherche du point de débarquement
+    CALL FUNCTION 'READ_TEXT'
+         EXPORTING
+              id                      = 'Z007'
+              language                = vbdkl-spras
+              name                    = vbdkl-tdname
+              object                  = 'VBBK'
+         TABLES
+              lines                   = wline
+         EXCEPTIONS
+              id                      = 1
+              language                = 2
+              name                    = 3
+              not_found               = 4
+              object                  = 5
+              reference_check         = 6
+              wrong_access_to_archive = 7
+              OTHERS                  = 8.
+
+    IF sy-subrc = 0.
+      READ TABLE wline INDEX 1.
+      IF wline+2 NE space.
+        vbdkl-ablad = wline+2.
+      ENDIF.
+    ENDIF.
+
+*** fin modif JD - point de débarquement
+
+  ENDFORM.
+
+
+*---------------------------------------------------------------------*
+*       FORM PROTOCOL_UPDATE                                          *
+*---------------------------------------------------------------------*
+*       Die Meldungen werden für das Protocoll gesammelt.             *
+*---------------------------------------------------------------------*
+FORM protocol_update.
+
+  CHECK xscreen = space.
+  CALL FUNCTION 'NAST_PROTOCOL_UPDATE'
+       EXPORTING
+            msg_arbgb = syst-msgid
+            msg_nr    = syst-msgno
+            msg_ty    = syst-msgty
+            msg_v1    = syst-msgv1
+            msg_v2    = syst-msgv2
+            msg_v3    = syst-msgv3
+            msg_v4    = syst-msgv4
+       EXCEPTIONS
+            OTHERS    = 1.
+
+ENDFORM.
+
+
+*---------------------------------------------------------------------*
+*       FORM VBDKL_DATA                                               *
+*---------------------------------------------------------------------*
+*       Lieferscheinview aufbauen                                    *
+*---------------------------------------------------------------------*
+FORM vbdkl_data.
+  DATA: ls_adrc TYPE adrc,
+        lv_adrnr TYPE adrnr.
+
+  vbco3-mandt  = sy-mandt.
+  vbco3-spras = nast-spras.
+  vbco3-vbeln = nast-objky.
+  vbco3-kunde = nast-parnr.
+  vbco3-parvw = nast-parvw.
+  CALL FUNCTION 'RV_DELIVERY_PRINT_VIEW'
+       EXPORTING
+            comwa = vbco3
+       IMPORTING
+            kopf  = vbdkl
+       TABLES
+            pos   = tvbdpl.
+
+*** modif JD - 04/06/99 recherche de la date de sortie marchandise
+  SELECT SINGLE * FROM likp
+        WHERE vbeln = vbdkl-vbeln.
+  IF likp-wadat_ist IS INITIAL.
+    likp-wadat_ist = likp-wadat.
+  ENDIF.
+*** fin modif JD - 04/06/99
+
+** RLT/BVD - 17/10/02 - Gestion des livraisons vers stockiste
+**  -> Adresse de livraison = adresse du magasin du 1er poste
+  DATA: wlg_vbpa LIKE vbpa,
+        wlg_vbadr LIKE vbadr.
+  CLEAR: wlg_vbpa, wlg_vbadr.
+  CLEAR lips.
+  SELECT SINGLE umlgo umwrk
+         INTO CORRESPONDING FIELDS OF lips FROM lips
+         WHERE vbeln = vbdkl-vbeln.
+  IF NOT lips-umlgo IS INITIAL.
+    CLEAR twlad.
+    SELECT SINGLE * FROM twlad
+           WHERE werks = lips-umwrk
+             AND lgort = lips-umlgo.
+    IF sy-subrc = 0.
+      wlg_vbpa-adrnr = twlad-adrnr.
+      CLEAR wlg_vbadr.
+      CALL FUNCTION 'VIEW_VBADR'
+           EXPORTING
+                input      = wlg_vbpa
+                nrart      = 'XX'
+                langu_prop = nast-spras
+           IMPORTING
+                adresse    = wlg_vbadr.
+      IF sy-subrc = 0.
+        MOVE-CORRESPONDING wlg_vbadr TO vbdkl.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+
+** modification ORBIS 15/03/2006 code international du pays
+  vbdkl-name4 = vbdkl-land1.
+****** modif JD 02/03/99 recherche du pays de l'expediteur
+**  PERFORM z_libelle_pays USING vbdkl-land1.
+**  MOVE t005t-landx TO vbdkl-name4.
+**  TRANSLATE vbdkl-name4 TO UPPER CASE.
+****** fin de modif JD - recherche du pays
+  IF NOT vbdkl-land1_sp IS INITIAL.
+    vbdkl-name4_sp = vbdkl-land1_sp.
+  ELSE.
+    CLEAR vbdkl-name4_sp.
+  ENDIF.
+****** modif JD 02/03/99 recherche du pays de l'expediteur
+**  PERFORM z_libelle_pays USING vbdkl-land1_sp.
+**  IF sy-subrc = 0.
+**    MOVE t005t-landx TO vbdkl-name4_sp.
+**    TRANSLATE vbdkl-name4_sp TO UPPER CASE.
+**  ENDIF.
+****** fin de modif JD - recherche du pays
+** fin modification ORBIS 15/03/2006 code international du pays
+
+*** modif JD 30/04/99 recherche de l'heure de livraison
+  IF vbdkl-lfuhr IS INITIAL.
+    SELECT SINGLE * FROM knva
+           WHERE kunnr = vbdkl-kunwe
+           AND   ablad = vbdkl-ablad.
+    vbdkl-lfuhr = knva-moab1.
+  ENDIF.
+*** fin modif JD heure de livraison
+
+*** recherche du numéro de commande
+  PERFORM numero_commande.
+
+*** modif JD - 02/03/99 formatage correct des plaques d'immatriculation
+*        vbdkl-traid contiendra la 1ère (véhicule moteur)
+*        vbdkl-name3 contiendra la 2ème (véhicule tracté)
+  SPLIT vbdkl-traid AT '-' INTO vbdkl-traid vbdkl-name3.
+*** fin modif JD - formatage plaques
+
+  IF VBDKL-VKORG EQ '3320'.
+    gv_location = vbdkl-ablad.
+    IF gv_location EQ SPACE.
+      SELECT SINGLE adrnr FROM vbpa INTO lv_adrnr
+        WHERE vbeln = vbdkl-vbeln
+        AND parvw = 'WE'.
+      IF sy-subrc EQ 0.
+        SELECT SINGLE * FROM adrc INTO ls_adrc
+          WHERE addrnumber = lv_adrnr.
+        IF sy-subrc EQ 0.
+          gv_location = ls_adrc-str_suppl1.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.
+
+*---------------------------------------------------------------------*
+*       FORM VBPLA_DATA                                               *
+*---------------------------------------------------------------------*
+*       Packlistenview aufbauen                                       *
+*---------------------------------------------------------------------*
+FORM vbpla_data.
+
+  vbco3-mandt  = sy-mandt.
+  vbco3-spras  = nast-spras.
+  vbco3-vbeln  = nast-objky.
+  vbco3-kunde  = nast-parnr.
+  vbco3-parvw  = nast-parvw.
+  vbco3-object = 'L'.
+
+  CALL FUNCTION 'SD_PACKING_PRINT_VIEW'
+       EXPORTING
+            comwa            = vbco3
+       IMPORTING
+            vbpla_wa         = vbpla
+       TABLES
+            vbplk_tab        = lvbplk
+            vbplp_tab        = lvbplp
+            vbpls_tab        = lvbpls
+       EXCEPTIONS
+            object_not_found = 01
+            OTHERS           = 99.
+* Ajout T.D
+  LOOP AT lvbplk.
+    IF lvbplk-uevel IS INITIAL.
+      lvbplk-uevel = lvbplk-venum.
+      MODIFY lvbplk INDEX sy-tabix.
+    ENDIF.
+  ENDLOOP.
+* Fin Ajout T.D
+
+ENDFORM.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  F-COMPTEUR-UM
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_LVBPLK-EXIDV  text                                         *
+*----------------------------------------------------------------------*
+FORM f-compteur-um USING    p_lvbplk-exidv.
+
+  CLEAR t_zetq03.
+  READ TABLE t_zetq03 WITH KEY zznum_um = p_lvbplk-exidv.
+  IF sy-subrc NE 0.
+    t_zetq03-zznum_um = p_lvbplk-exidv.
+    APPEND t_zetq03.
+    w_obzae = w_obzae + 1.
+  ENDIF.
+
+ENDFORM.                               " F-COMPTEUR-UM
+
+
+*&---------------------------------------------------------------------*
+*&      Form  F-CHARG
+*&---------------------------------------------------------------------*
+* Accès à LTAP pour retrouver l'OT vers >Emplacement sortie livraison
+*----------------------------------------------------------------------*
+FORM f-charg.
+
+*  CLEAR ZETQ02.
+*  SELECT SINGLE * FROM  ZETQ02
+*         WHERE  ZZNUMERO = LVBPLK-EXIDV+11(9).
+*  move zetq02-licha(10) to zetq02-charg.
+
+ENDFORM.                               " F-CHARG
+
+*&---------------------------------------------------------------------*
+*&      Form  F-COMPT-POSTE
+*&---------------------------------------------------------------------*
+*  <<<<<<<<<<<<<<<   %fa19980904    >>>>>>>>>>>>>>>>>>>>>>>
+*  Nouvelle form contre bug Nb de colis
+*----------------------------------------------------------------------*
+FORM  f-compt-poste.
+
+  READ TABLE tz_zetq02 WITH  KEY
+                          matnr = vbdpl-matnr
+                          charg = vbdpl-charg
+* Ajout T.D
+                          uevel = lvbplk-uevel
+                          posnr = vbdpl-posnr
+* Fin Ajout T.D
+                          vhilm = lvbplk-vhilm .
+
+  IF sy-subrc = 0.
+    tz_zetq02-obzae = tz_zetq02-obzae + 1.
+    MODIFY tz_zetq02 TRANSPORTING obzae
+                       WHERE matnr = vbdpl-matnr
+                       AND   charg = vbdpl-charg
+* Ajout T.D
+                       AND   uevel = lvbplk-uevel
+                       AND   posnr = vbdpl-posnr
+* Fin Ajout T.D
+                       AND   vhilm = lvbplk-vhilm .
+
+  ELSE.
+    tz_zetq02-matnr =  vbdpl-matnr.
+    tz_zetq02-charg =  vbdpl-charg.
+    tz_zetq02-vhilm =  lvbplk-vhilm.
+    tz_zetq02-obzae = 1.
+* Ajout T.D
+    tz_zetq02-uevel = lvbplk-uevel.
+    tz_zetq02-posnr = vbdpl-posnr.
+* Fin Ajout T.D
+    APPEND tz_zetq02.
+  ENDIF.
+
+ENDFORM.
+
+** modification ORBIS 15/03/2006 code international du pays
+****************************************************************
+*** libelle des pays
+****************************************************************
+**FORM z_libelle_pays USING z_code_pays LIKE t005t-land1.
+**
+**  SELECT SINGLE  * FROM t005t
+**  WHERE spras = nast-spras
+**  AND land1 = z_code_pays.
+**
+**ENDFORM.
+** fin modification ORBIS 15/03/2006 code international du pays
+*&---------------------------------------------------------------------*
+*&      Form  NUMERO_COMMANDE
+*&---------------------------------------------------------------------*
+*      Recherche du numéro de commande dans le texte d'entete
+*----------------------------------------------------------------------*
+FORM numero_commande.
+*** modif JD 02/03/99 - recherche du numéro de commande
+
+  CLEAR w-numcde.
+  CALL FUNCTION 'READ_TEXT'
+       EXPORTING
+            id                      = 'Z008'
+            language                = vbdkl-spras
+            name                    = vbdkl-tdname
+            object                  = 'VBBK'
+       TABLES
+            lines                   = wline
+       EXCEPTIONS
+            id                      = 1
+            language                = 2
+            name                    = 3
+            not_found               = 4
+            object                  = 5
+            reference_check         = 6
+            wrong_access_to_archive = 7
+            OTHERS                  = 8.
+
+  IF sy-subrc = 0.
+    READ TABLE wline INDEX 1.
+    IF wline+2 NE space.
+      w-numcde = wline+2.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.                               " NUMERO_COMMANDE
+
+** modification ORBIS 15/03/2006 Nom expéditeur replacer
+*&---------------------------------------------------------------------*
+*&      Form  check_kvgr4_shipping_name
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      <--P_SADR_NAME1  text
+*      -->P_TVBDPL  text
+*----------------------------------------------------------------------*
+FORM check_kvgr4_shipping_name TABLES   lt_vbdpl STRUCTURE vbdpl
+                               USING    p_spras
+                               CHANGING p_name1.
+  DATA : l_vbdpl LIKE vbdpl,
+         l_kvgr4 TYPE kvgr4,
+         l_tvv4t LIKE tvv4t.
+
+*{   DELETE         D01K921650                                        1
+*\  LOOP AT lt_vbdpl INTO l_vbdpl
+*\               WHERE vgbel NE space.
+*\    SELECT SINGLE kvgr4 FROM vbak INTO l_kvgr4
+*\               WHERE vbeln = l_vbdpl-vgbel.
+*\    IF sy-subrc = 0 AND l_kvgr4 NE space.
+*\      SELECT SINGLE * FROM tvv4t INTO l_tvv4t WHERE spras = p_spras
+*\                                       AND   kvgr4 = l_kvgr4.
+*\      IF sy-subrc NE 0.
+*\      SELECT SINGLE * FROM tvv4t INTO l_tvv4t WHERE kvgr4 = l_kvgr4.##
+*\      ENDIF.
+*\      IF NOT l_tvv4t-bezei IS INITIAL.
+*\        p_name1 = l_tvv4t-bezei.
+*\      ENDIF.
+*\    ENDIF.
+*\    EXIT. " only first scheduling agreement is checked
+*\  ENDLOOP.
+*}   DELETE
+ENDFORM.                    " check_kvgr4_shipping_name
+** fin modification ORBIS 15/03/2006 Nom expéditeur replacer
